@@ -1,0 +1,22 @@
+{
+    "factorio.versions": [
+        {
+            "name": "goognaChoopna",
+            "factorioPath": "/home/downey/.steam/debian-installation/steamapps/common/Factorio/bin/x64/factorio",
+            "active": true
+        }
+    ],
+    "Lua.diagnostics.globals": [
+        "rendering",
+        "commands",
+        "game",
+        "data",
+        "defines",
+        "script",
+        "log",
+        "global"
+    ],
+    "Lua.diagnostics.disable": [
+        "lowercase-global"
+    ]
+}
