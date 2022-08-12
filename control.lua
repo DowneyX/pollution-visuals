@@ -5,7 +5,7 @@
 -- STILL NEED TO TAKE CUNKS OUT OF POLLUTED_CHUNKS WHEN THEY ARE NOT POLLUTED
 -- MAKE MULTIPLE LAYERS OF ANIMATIONS POSSIBLE
 -- MAKE AMOUNT OF CHUNKS PER TICK CONFIGURABLE
--- 
+--
 
 -------------------------------------------------------------------------
 -- MAIN FUNCTIONS
@@ -13,7 +13,7 @@
 
 -- function that triggers every tick
 function on_tick()
-    if global.all_chunks == nil then
+    if global.is_setup == false then
         --log("setup")
         setup()
     elseif not(global.is_checking) and not(global.is_fading) then
@@ -30,7 +30,7 @@ end
 
 --sets up all the variables and populates them with initial values
 function setup()
-    --clearing all visuals juist incase there are some left from a previous version 
+    --clearing all visuals juist incase there are some left from a previous version
     rendering.clear("pollution-visuals")
 
     --defining the overworld. i will probably have to loop through all the surfaces. but i'll do that later
@@ -53,6 +53,9 @@ function setup()
 
     --bool for if we need to start fading the animations
     global.is_fading = false
+    
+    global.is_setup = true
+
 
     --looping through all the chunks on surface
     for chunk in surface.get_chunks() do
@@ -322,10 +325,16 @@ function delete_chunk(chunk)
     global.all_chunks[x.." "..y] = nil
     global.polluted_chunks[x.." "..y] = nil
 end
+
+function set_is_setup()
+    global.is_setup = false
+end
+
 -------------------------------------------------------------------------
 -- EVENTS
 -------------------------------------------------------------------------
 script.on_event(defines.events.on_chunk_deleted, delete_chunk)
 script.on_event(defines.events.on_chunk_generated, add_chunk)
 script.on_event(defines.events.on_tick, on_tick)
-script.on_configuration_changed(setup())
+script.on_configuration_changed(set_is_setup)
+script.on_init(set_is_setup)
