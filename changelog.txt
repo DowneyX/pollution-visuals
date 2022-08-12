@@ -8,3 +8,8 @@ Version: 0.0.2
 Date: 11-08-2022
   Changes:
     - added thumbnail.png
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 11-08-2022
+  Changes:
+    - added smooth transitions
