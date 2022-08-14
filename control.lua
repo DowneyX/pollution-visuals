@@ -2,10 +2,10 @@
 -- TO DO
 -------------------------------------------------------------------------
 
--- STILL NEED TO TAKE CUNKS OUT OF POLLUTED_CHUNKS WHEN THEY ARE NOT POLLUTED
--- MAKE MULTIPLE LAYERS OF ANIMATIONS POSSIBLE
 -- MAKE AMOUNT OF CHUNKS PER TICK CONFIGURABLE
---
+-- OPTIMISE FADING IN/OUT OF ANIMATIONS
+-- MAKE IT SO YOU CAN TURN THE VISUALS OFF/ON INGAME
+-- MAKE IT POSSIBLE TO HAVE POLLUTION ON OTHER SURFACES
 
 -------------------------------------------------------------------------
 -- MAIN FUNCTIONS
@@ -28,12 +28,12 @@ function on_tick()
     end
 end
 
---sets up all the variables and populates them with initial values
+-- sets up all the variables and populates them with initial values
 function setup()
-    --clearing all visuals juist incase there are some left from a previous version
+    -- clearing all visuals juist incase there are some left from a previous version
     rendering.clear("pollution-visuals")
 
-    --defining the overworld. i will probably have to loop through all the surfaces. but i'll do that later
+    -- defining the overworld. i will probably have to loop through all the surfaces. for right now this is fine
     local surface=game.surfaces[1]
 
     -- defining chunk tables
@@ -54,8 +54,8 @@ function setup()
     --bool for if we need to start fading the animations
     global.is_fading = false
     
+    -- bool for checking if the game is setup or not
     global.is_setup = true
-
 
     --looping through all the chunks on surface
     for chunk in surface.get_chunks() do
@@ -63,7 +63,7 @@ function setup()
         local y = chunk.area.left_top.y
 
         -- inserting chunk in all_chunks
-        global.all_chunks[x.." "..y] = {position = {x=x,y=y}, r_id=-1, surface=surface.index}
+        global.all_chunks[x.." "..y] = {position = {x=x,y=y}, r_id={}, surface=surface.index}
 
         -- inserting chunk in polluted_chunks 
         local chunk_pollution_level = surface.get_pollution(chunk.area.left_top)
@@ -77,30 +77,31 @@ function setup()
             local SW = {x-32, y+32}
             local NW = {x-32, y-32}
 
-            global.polluted_chunks[x.." "..y] = {position = {x=x,y=y}, r_id=-1, surface=surface.index}
+            -- if a neighboring chunk has 0 pollution add it to the polluted_chunk table anyway.
+            global.polluted_chunks[x.." "..y] = {position = {x=x,y=y}, r_id={}, surface=surface.index}
             if surface.get_pollution(N) == 0 then 
-                global.polluted_chunks[x.." "..(y-32)] = {position = {x=x, y=y-32}, r_id=-1, surface=surface.index} 
+                global.polluted_chunks[x.." "..(y-32)] = {position = {x=x, y=y-32}, r_id={}, surface=surface.index} 
             end
             if surface.get_pollution(E) == 0 then 
-                global.polluted_chunks[(x+32).." "..y] = {position = {x=x+32, y=y}, r_id=-1, surface=surface.index} 
+                global.polluted_chunks[(x+32).." "..y] = {position = {x=x+32, y=y}, r_id={}, surface=surface.index} 
             end
             if surface.get_pollution(S) == 0 then 
-                global.polluted_chunks[x.." "..(y+32)] = {position = {x=x, y=y+32}, r_id=-1, surface=surface.index} 
+                global.polluted_chunks[x.." "..(y+32)] = {position = {x=x, y=y+32}, r_id={}, surface=surface.index} 
             end
             if surface.get_pollution(W) == 0 then 
-                global.polluted_chunks[(x-32).." "..y] = {position = {x=x-32, y=y}, r_id=-1, surface=surface.index} 
+                global.polluted_chunks[(x-32).." "..y] = {position = {x=x-32, y=y}, r_id={}, surface=surface.index} 
             end
             if surface.get_pollution(NE) == 0 then 
-                global.polluted_chunks[(x+32).." "..(y-32)] = {position = {x=x+32,y=y-32}, r_id=-1, surface=surface.index} 
+                global.polluted_chunks[(x+32).." "..(y-32)] = {position = {x=x+32,y=y-32}, r_id={}, surface=surface.index} 
             end
             if surface.get_pollution(SE) == 0 then 
-                global.polluted_chunks[(x+32).." "..(y+32)] = {position = {x=x+32, y=y+32}, r_id=-1, surface=surface.index} 
+                global.polluted_chunks[(x+32).." "..(y+32)] = {position = {x=x+32, y=y+32}, r_id={}, surface=surface.index} 
             end
             if surface.get_pollution(SW) == 0 then 
-                global.polluted_chunks[(x-32).." "..(y+32)] = {position = {x=x-32, y=y+32}, r_id=-1, surface=surface.index} 
+                global.polluted_chunks[(x-32).." "..(y+32)] = {position = {x=x-32, y=y+32}, r_id={}, surface=surface.index} 
             end
             if surface.get_pollution(NW) == 0 then 
-                global.polluted_chunks[(x-32).." "..(y-32)] = {position = {x=x-32, y=y-32}, r_id=-1, surface=surface.index} 
+                global.polluted_chunks[(x-32).." "..(y-32)] = {position = {x=x-32, y=y-32}, r_id={}, surface=surface.index} 
             end
         end
     end
@@ -133,6 +134,7 @@ function check_all_chunks()
             local SW = {x-32, y+32}
             local NW = {x-32, y-32}
 
+            --adding chunk or neighboring chunks to the polluted_chunks table
             if global.polluted_chunks[x.." "..y] == nil then
                 global.polluted_chunks[x.." "..y] = {position = {x=x,y=y}, r_id=r_id, surface=surface.index} end
             if surface.get_pollution(N) == 0 and global.polluted_chunks[x.." "..(y-32)] == nil and global.all_chunks[x.." "..(y-32)] ~= nil then
@@ -165,78 +167,88 @@ function check_polluted_chunks()
     end
 end
 
--- draws an animation for a specifeid chunk
+-- draws an animation for a specified chunk
 function check_polluted_chunk(chunk_data)
-    --chunk information
+    --defining variables that i will need
     local surface = game.surfaces[chunk_data.surface]
     local x = chunk_data.position.x
     local y = chunk_data.position.y
-    local r_id = chunk_data.r_id
     local chunk_pollution_level = surface.get_pollution({x,y})
-    local current_anim = ""
-    local next_anim = ""
-    local anim_target = {x+16, y-16}
+    local anim_target = {x+16, y+16}
     local remove_chunk = false
+    local density_levels = {50,100,150}
 
-    if r_id > -1 then current_anim = rendering.get_animation(r_id) end
-    
-    -- drawing animation depending on pollution levels
-    if chunk_pollution_level > 50 then next_anim = "smog_middle"
-    else
-        -- variables of neighboring chunks
-        local N = surface.get_pollution({x, y-32})
-        local E = surface.get_pollution({x+32, y})
-        local S = surface.get_pollution({x, y+32})
-        local W = surface.get_pollution({x-32, y})
-        local NE = surface.get_pollution({x+32, y-32})
-        local SE = surface.get_pollution({x+32, y+32})
-        local SW = surface.get_pollution({x-32, y+32})
-        local NW = surface.get_pollution({x-32, y-32})
+    for i ,level in pairs(density_levels) do
+        -- more variables that will be needed
+        local r_id = chunk_data.r_id
+        local current_anim = ""
+        local next_anim = ""
 
-        -- checking what type of animation to draw depending on the neighboring chunks
-        if (N > 50 and S > 50) or (W > 50 and E > 50) then next_anim="smog_middle"
-        elseif S > 50 and W <= 50 and E <= 50 then next_anim="smog_top"
-        elseif N > 50 and W <= 50 and E <= 50 then next_anim="smog_bottom"
-        elseif (W > 50 or (NW > 50 and SW > 50)) and (N <= 50 and S <= 50 and NE <= 50 and NE <= 50) then next_anim="smog_left"
-        elseif (E > 50 or (NE > 50 and SE > 50)) and (N <= 50 and S <= 50 and NW <= 50 and NW <= 50) then next_anim="smog_right"
-        elseif SW > 50 and N <= 50 and NE <= 50 and E <= 50 and SE <= 50 and S <= 50 and W <= 50 and NW <= 50 then next_anim="smog_corner_left_top"
-        elseif SE > 50 and N <= 50 and NE <= 50 and E <= 50 and SW <= 50 and S <= 50 and W <= 50 and NW <= 50 then next_anim="smog_corner_right_top"
-        elseif NW > 50 and N <= 50 and NE <= 50 and E <= 50 and SW <= 50 and S <= 50 and W <= 50 and SE <= 50 then next_anim="smog_corner_left_bottom"
-        elseif NE > 50 and E <= 50 and SE <= 50 and S <= 50 and SW <= 50 and W <= 50 and NW <= 50 and N <= 50 then next_anim="smog_corner_right_bottom"
-        elseif S > 50 and E > 50 and W <= 50 and N <= 50 and NW <= 50 then next_anim="smog_corner_inv_left_top"
-        elseif S > 50 and W > 50 and E <= 50 and N <= 50 and NE <= 50 then next_anim="smog_corner_inv_right_top"
-        elseif N > 50 and E > 50 and W <= 50 and S <= 50 and SW <= 50 then next_anim="smog_corner_inv_left_bottom"
-        elseif N > 50 and W > 50 and E <= 50 and S <= 50 and SE <= 50 then next_anim="smog_corner_inv_right_bottom"
-        elseif N == 0 and E == 0 and S == 0 and W == 0 and NE == 0 and NW == 0 and SE == 0 and SW == 0 and chunk_pollution_level == 0 then
-            remove_chunk = true
+        -- setting the current animation
+        if r_id[i] ~= nil then current_anim = rendering.get_animation(r_id[i]) end
+
+        -- setting the next animation
+        if chunk_pollution_level > level then
+            next_anim = "smog_middle"
+        else
+            -- variables of neighboring chunks
+            local N = surface.get_pollution({x, y-32})
+            local E = surface.get_pollution({x+32, y})
+            local S = surface.get_pollution({x, y+32})
+            local W = surface.get_pollution({x-32, y})
+            local NE = surface.get_pollution({x+32, y-32})
+            local SE = surface.get_pollution({x+32, y+32})
+            local SW = surface.get_pollution({x-32, y+32})
+            local NW = surface.get_pollution({x-32, y-32})
+
+            --selecting the right animation depending on neighboring chunks pollution values
+            if (N > level and S > level) or (W > level and E > level) then next_anim="smog_middle"
+            elseif S > level and W <= level and E <= level then next_anim="smog_top"
+            elseif N > level and W <= level and E <= level then next_anim="smog_bottom"
+            elseif (W > level or (NW > level and SW > level)) and (N <= level and S <= level and NE <= level and SE <= level) then next_anim="smog_left"
+            elseif (E > level or (NE > level and SE > level)) and (N <= level and S <= level and NW <= level and SW <= level) then next_anim="smog_right"
+            elseif SW > level and N <= level and NE <= level and E <= level and SE <= level and S <= level and W <= level and NW <= level then next_anim="smog_corner_left_top"
+            elseif SE > level and N <= level and NE <= level and E <= level and SW <= level and S <= level and W <= level and NW <= level then next_anim="smog_corner_right_top"
+            elseif NW > level and N <= level and NE <= level and E <= level and SW <= level and S <= level and W <= level and SE <= level then next_anim="smog_corner_left_bottom"
+            elseif NE > level and E <= level and SE <= level and S <= level and SW <= level and W <= level and NW <= level and N <= level then next_anim="smog_corner_right_bottom"
+            elseif S > level and E > level and W <= level and N <= level and NW <= level then next_anim="smog_corner_inv_left_top"
+            elseif S > level and W > level and E <= level and N <= level and NE <= level then next_anim="smog_corner_inv_right_top"
+            elseif N > level and E > level and W <= level and S <= level and SW <= level then next_anim="smog_corner_inv_left_bottom"
+            elseif N > level and W > level and E <= level and S <= level and SE <= level then next_anim="smog_corner_inv_right_bottom"
+            elseif N == 0 and E == 0 and S == 0 and W == 0 and NE == 0 and NW == 0 and SE == 0 and SW == 0 and chunk_pollution_level == 0 then
+                remove_chunk = true
+            end
         end
-    end
 
-    if r_id > -1 then
-        if next_anim == "" then
-            --mark for fade out
-            global.animations_fading_out[r_id] = {tint = {r=1, g=1, b=1, a=1}, position={x=x,y=y}}
-            r_id = -1
-        elseif not(next_anim == current_anim) then
-            --mark for fade out
-            global.animations_fading_out[r_id] = {tint = {r=1, g=1, b=1, a=1}, position={x=x,y=y}}
-            --mark for fade in 
-            r_id = rendering.draw_animation{animation=next_anim, surface=surface,target=anim_target, y_scale=2, x_scale=2, tint={r=0, g=0, b=0, a=0}}
-            global.animations_fading_in[r_id] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
-        end
-    else
-        if not (next_anim == "") then
+        -- marking animations for fade in/out
+        if r_id[i] ~= nil then
+            if next_anim == "" then
+                --mark for fade out
+                global.animations_fading_out[r_id[i]] = {tint = {r=1, g=1, b=1, a=1}, position={x=x,y=y}}
+                r_id[i] = nil
+            elseif next_anim ~= current_anim then
+                --mark for fade out
+                global.animations_fading_out[r_id[i]] = {tint = {r=1, g=1, b=1, a=1}, position={x=x,y=y}}
+                --mark for fade in 
+                r_id[i] = rendering.draw_animation{animation=next_anim, surface=surface,target=anim_target, y_scale=2, x_scale=2, tint={r=0, g=0, b=0, a=0}}
+                global.animations_fading_in[r_id[i]] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
+            end
+        elseif next_anim ~= "" then
             --mark for fade in
-            r_id = rendering.draw_animation{animation=next_anim, surface=surface,target=anim_target, y_scale=2, x_scale=2, tint={r=0, g=0,b=0, a=0}}
-            global.animations_fading_in[r_id] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
+            r_id[i] = rendering.draw_animation{animation=next_anim, surface=surface,target=anim_target, y_scale=2, x_scale=2, tint={r=0, g=0,b=0, a=0}}
+            global.animations_fading_in[r_id[i]] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
         end
-    end
-    global.all_chunks[x.." "..y].r_id = r_id
-    global.polluted_chunks[x.." "..y].r_id = r_id
 
+        --update global tables with new values
+        global.all_chunks[x.." "..y].r_id[i] = r_id[i]
+        global.polluted_chunks[x.." "..y].r_id[i] = r_id[i]
+    end
+
+    -- delete chunk from polluted_chunks
     if remove_chunk then global.polluted_chunks[x.." "..y] = nil end
 end
 
+-- fade in/out animations
 function fade()
     local is_fading_in = true
     local is_fading_out = true
@@ -306,7 +318,7 @@ function add_chunk(chunk)
     local y = chunk.area.left_top.y
     local surface = chunk.surface
 
-    global.all_chunks[x.." "..y] = {position = {x=x,y=y}, r_id=-1, surface=surface.index}
+    global.all_chunks[x.." "..y] = {position = {x=x,y=y}, r_id={}, surface=surface.index}
 
 end
 
@@ -317,15 +329,18 @@ function delete_chunk(chunk)
     local chunk_data = global.all_chunks[x.." "..y]
     local r_id = chunk_data.r_id
 
-    if r_id > -1 then
-        global.animations_fading_in[r_id] = nil
-        global.animations_fading_out[r_id] = nil
-        rendering.destroy(r_id)
+    if r_id ~= {} then
+        for i ,v in pairs(r_id) do
+            global.animations_fading_in[r_id[i]] = nil
+            global.animations_fading_out[r_id[i]] = nil
+            rendering.destroy(r_id[i])
+        end
     end
     global.all_chunks[x.." "..y] = nil
     global.polluted_chunks[x.." "..y] = nil
 end
 
+-- wil set is_setup to false
 function set_is_setup()
     global.is_setup = false
 end

@@ -18,3 +18,8 @@ Version: 0.1.2
 Date: 12-08-2022
   Changes:
     - hopefully fix migration bug
+---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 12-08-2022
+  Changes:
+    - added multiple layers of smog
