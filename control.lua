@@ -177,6 +177,7 @@ function check_polluted_chunk(chunk_data)
     local anim_target = {x+16, y+16}
     local remove_chunk = false
     local density_levels = {50,100,150}
+    local players = get_players_to_render_for()
 
     for i ,level in pairs(density_levels) do
         -- more variables that will be needed
@@ -230,12 +231,16 @@ function check_polluted_chunk(chunk_data)
                 --mark for fade out
                 global.animations_fading_out[r_id[i]] = {tint = {r=1, g=1, b=1, a=1}, position={x=x,y=y}}
                 --mark for fade in 
-                r_id[i] = rendering.draw_animation{animation=next_anim, surface=surface,target=anim_target, y_scale=2, x_scale=2, tint={r=0, g=0, b=0, a=0}}
+                r_id[i] = rendering.draw_animation{animation=next_anim, surface=surface,target=anim_target, y_scale=2, x_scale=2, tint={r=0, g=0, b=0, a=0}, players=players}
+                if #players == 0 then 
+                    rendering.set_visible(r_id[i], false)
+                end
                 global.animations_fading_in[r_id[i]] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
             end
         elseif next_anim ~= "" then
             --mark for fade in
-            r_id[i] = rendering.draw_animation{animation=next_anim, surface=surface,target=anim_target, y_scale=2, x_scale=2, tint={r=0, g=0,b=0, a=0}}
+            r_id[i] = rendering.draw_animation{animation=next_anim, surface=surface,target=anim_target, y_scale=2, x_scale=2, tint={r=0, g=0,b=0, a=0}, players=players}
+            if #players == 0 then rendering.set_visible(r_id[i], false) end
             global.animations_fading_in[r_id[i]] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
         end
 
@@ -345,11 +350,43 @@ function set_is_setup()
     global.is_setup = false
 end
 
+-- returns a table with all the players that have the "show-pollution-visuals" option on
+function get_players_to_render_for()
+	local result = {}
+
+	for i, player in pairs(game.players) do
+		local show_pollution_visuals = player.mod_settings["show-pollution-visuals"].value
+        if show_pollution_visuals then
+            table.insert(result, player)
+        end
+	end
+
+	return result
+end
+
+
+function setting_changed(data)
+    if data.setting == "show-pollution-visuals" then
+        local players = get_players_to_render_for()
+        for i, chunk_data in pairs(global.polluted_chunks) do        
+            for x, r_id in pairs(chunk_data.r_id) do
+                if #players == 0 then
+                    rendering.set_visible(r_id, false)
+                else
+                    rendering.set_visible(r_id, true)
+                    rendering.set_players(r_id, players)
+                end
+            end
+        end
+    end
+end
+
 -------------------------------------------------------------------------
 -- EVENTS
 -------------------------------------------------------------------------
 script.on_event(defines.events.on_chunk_deleted, delete_chunk)
 script.on_event(defines.events.on_chunk_generated, add_chunk)
 script.on_event(defines.events.on_tick, on_tick)
+script.on_event(defines.events.on_runtime_mod_setting_changed, setting_changed)
 script.on_configuration_changed(set_is_setup)
 script.on_init(set_is_setup)
