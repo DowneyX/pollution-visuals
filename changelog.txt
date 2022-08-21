@@ -28,3 +28,30 @@ Version: 0.2.1
 Date: 15-08-2022
   Changes:
     - added setting so you can turn on/off the visuals in game
+---------------------------------------------------------------------------------------------------
+Version: 0.2.2
+Date: 16-08-2022
+  Changes:
+    - changed the pollution thresholds to a exponential funtion instead of a linear one
+    - added configurable settings like chunks per tick and parameters for smog thickness.
+---------------------------------------------------------------------------------------------------
+Version: 0.2.3
+Date: 16-08-2022
+  Changes:
+    - made some performance adjustments
+---------------------------------------------------------------------------------------------------
+Version: 0.2.4
+Date: 20-08-2022
+  Changes:
+    - fix crash on deleting a chunk
+    - added functionality to render smog on every surface
+---------------------------------------------------------------------------------------------------
+Version: 0.2.5
+Date: 20-08-2022
+  Changes:
+    - fix crash on deleting surface
+---------------------------------------------------------------------------------------------------
+Version: 0.2.6
+Date: 21-08-2022
+  Changes:
+    - fix crash caused by assigning the wrong index on setup phase

@@ -14,7 +14,8 @@
         "defines",
         "script",
         "log",
-        "global"
+        "global",
+        "settings"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"
