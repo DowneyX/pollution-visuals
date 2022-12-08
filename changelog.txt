@@ -55,3 +55,8 @@ Version: 0.2.6
 Date: 21-08-2022
   Changes:
     - fix crash caused by assigning the wrong index on setup phase
+---------------------------------------------------------------------------------------------------
+Version: 0.2.7
+Date: 08-12-2022
+  Changes:
+    - fix compatability issue with RSO (made possible by SKProCH)
