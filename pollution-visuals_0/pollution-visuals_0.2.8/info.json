@@ -1,9 +1,0 @@
-{
-  "name": "pollution-visuals",
-  "version": "0.2.8",
-  "title": "Pollution visuals",
-  "author": "You",
-  "factorio_version": "2.0",
-  "dependencies": ["base >= 2.0"],
-  "description": "heavilly polluted areas will now contain clouds of smog"
-}
