@@ -1,13 +1,15 @@
 {
     "factorio.versions": [
         {
-            "name": "goognaChoopna",
-            "factorioPath": "/home/downey/.steam/debian-installation/steamapps/common/Factorio/bin/x64/factorio"
+            "name": "factorio 2.0.72",
+            "active": true,
+            "factorioPath": "/home/downey/.local/share/Steam/steamapps/compatdata/427520/pfx/drive_c/users/steamuser/AppData/Roaming/Factorio/mods/pollution-visuals_0.2.8/.vscode/factorio-proton-launch.sh",
+            "docsPath": "../../../../../../../../../../../../common/Factorio/doc-html/runtime-api.json",
+            "protosPath": "../../../../../../../../../../../../common/Factorio/doc-html/prototype-api.json"
         },
         {
-            "name": "factorio-base",
-            "factorioPath": "/home/downey/.local/share/Steam/steamapps/common/Factorio/bin/x64/factorio",
-            "active": true
+            "name": "factorio modding ",
+            "factorioPath": "/home/downey/.local/share/Steam/steamapps/common/Factorio/bin/x64/factorio.exe"
         }
     ],
     "Lua.diagnostics.globals": [
@@ -23,5 +25,9 @@
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"
-    ]
+    ],
+    "Lua.workspace.userThirdParty": [
+        "/home/downey/.config/Code/User/workspaceStorage/f92ece240581aa5df9da6fdb970da170/justarandomgeek.factoriomod-debug/sumneko-3rd"
+    ],
+    "Lua.workspace.checkThirdParty": "ApplyInMemory"
 }

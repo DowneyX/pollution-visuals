@@ -15,7 +15,7 @@
 
 -- wil set is_setup to false
 local function set_is_setup()
-    global.is_setup = false
+    storage.is_setup = false
 end
 
 -- returns a table with all the players that have the "show-pollution-visuals" option on
@@ -38,25 +38,25 @@ local function setup()
     rendering.clear("pollution-visuals")
 
     -- defining chunk tables
-    global.polluted_chunks = {}
-    global.polluted_chunks_i = nil
-    global.all_chunks = {}
-    global.all_chunks_i = nil
+    storage.polluted_chunks = {}
+    storage.polluted_chunks_i = nil
+    storage.all_chunks = {}
+    storage.all_chunks_i = nil
 
     -- defining fading sprite tables
-    global.sprites_fading_in = {}
-    global.sprites_fading_in_i = nil
-    global.sprites_fading_out = {}
-    global.sprites_fading_out_i = nil
+    storage.sprites_fading_in = {}
+    storage.sprites_fading_in_i = nil
+    storage.sprites_fading_out = {}
+    storage.sprites_fading_out_i = nil
 
     --bool for if we need to check all_chunks or just polluted_chunks
-    global.is_checking = false
+    storage.is_checking = false
 
     --bool for if we need to start fading the sprites
-    global.is_fading = false
+    storage.is_fading = false
     
     -- bool for checking if the game is setup or not
-    global.is_setup = true
+    storage.is_setup = true
 
     -- defining the overworld.
     for _, surface in pairs(game.surfaces) do
@@ -66,7 +66,7 @@ local function setup()
             local y = (chunk.y)
 
             -- inserting chunk in all_chunks
-            global.all_chunks[surface.index..":"..x..":"..y] = {position = {x=x,y=y}, surface=surface.index}
+            storage.all_chunks[surface.index..":"..x..":"..y] = {position = {x=x,y=y}, surface=surface.index}
 
             -- inserting chunk in polluted_chunks 
             local chunk_pollution_level = surface.get_pollution(chunk.area.left_top)
@@ -81,30 +81,30 @@ local function setup()
                 local SW = surface.get_pollution({(x-1)*32, (y+1)*32})
                 local NW = surface.get_pollution({(x-1)*32, (y-1)*32})
 
-                global.polluted_chunks[surface.index..":"..x..":"..y] = {position = {x=x,y=y}, r_id={}, surface=surface.index}
+                storage.polluted_chunks[surface.index..":"..x..":"..y] = {position = {x=x,y=y}, r_id={}, surface=surface.index}
                 if N == 0 then 
-                    global.polluted_chunks[surface.index..":"..x..":"..(y-1)] = {position = {x=x, y=y-1}, r_id={}, surface=surface.index} 
+                    storage.polluted_chunks[surface.index..":"..x..":"..(y-1)] = {position = {x=x, y=y-1}, r_id={}, surface=surface.index} 
                 end
                 if E == 0 then 
-                    global.polluted_chunks[surface.index..":"..(x+1)..":"..y] = {position = {x=x+1, y=y}, r_id={}, surface=surface.index} 
+                    storage.polluted_chunks[surface.index..":"..(x+1)..":"..y] = {position = {x=x+1, y=y}, r_id={}, surface=surface.index} 
                 end
                 if S == 0 then 
-                    global.polluted_chunks[surface.index..":"..x..":"..(y+1)] = {position = {x=x, y=y+1}, r_id={}, surface=surface.index} 
+                    storage.polluted_chunks[surface.index..":"..x..":"..(y+1)] = {position = {x=x, y=y+1}, r_id={}, surface=surface.index} 
                 end
                 if W == 0 then 
-                    global.polluted_chunks[surface.index..":"..(x-1)..":"..y] = {position = {x=x-1, y=y}, r_id={}, surface=surface.index} 
+                    storage.polluted_chunks[surface.index..":"..(x-1)..":"..y] = {position = {x=x-1, y=y}, r_id={}, surface=surface.index} 
                 end
                 if NE == 0 then 
-                    global.polluted_chunks[surface.index..":"..(x+1)..":"..(y-1)] = {position = {x=x+1,y=y-1}, r_id={}, surface=surface.index} 
+                    storage.polluted_chunks[surface.index..":"..(x+1)..":"..(y-1)] = {position = {x=x+1,y=y-1}, r_id={}, surface=surface.index} 
                 end
                 if SE == 0 then 
-                    global.polluted_chunks[surface.index..":"..(x+1)..":"..(y+1)] = {position = {x=x+1, y=y+1}, r_id={}, surface=surface.index} 
+                    storage.polluted_chunks[surface.index..":"..(x+1)..":"..(y+1)] = {position = {x=x+1, y=y+1}, r_id={}, surface=surface.index} 
                 end
                 if SW == 0 then 
-                    global.polluted_chunks[surface.index..":"..(x-1)..":"..(y+1)] = {position = {x=x-1, y=y+1}, r_id={}, surface=surface.index} 
+                    storage.polluted_chunks[surface.index..":"..(x-1)..":"..(y+1)] = {position = {x=x-1, y=y+1}, r_id={}, surface=surface.index} 
                 end
                 if NW == 0 then 
-                    global.polluted_chunks[surface.index..":"..(x-1)..":"..(y-1)] = {position = {x=x-1, y=y-1}, r_id={}, surface=surface.index} 
+                    storage.polluted_chunks[surface.index..":"..(x-1)..":"..(y-1)] = {position = {x=x-1, y=y-1}, r_id={}, surface=surface.index} 
                 end
             end
         end
@@ -114,9 +114,9 @@ end
 -- will check if chunks are polluted and put them in polluted_chunks if they are
 local function check_all_chunks()
     for i = 1, settings.global["chunks-per-tick-pollution-visuals"].value do
-        local index ,chunk_data = next(global.all_chunks, global.all_chunks_i)
-        if index == nil then global.all_chunks_i = nil global.is_checking = false break 
-        else global.all_chunks_i = index end
+        local index ,chunk_data = next(storage.all_chunks, storage.all_chunks_i)
+        if index == nil then storage.all_chunks_i = nil storage.is_checking = false break 
+        else storage.all_chunks_i = index end
 
         local surface_i = chunk_data.surface
         local surface = game.surfaces[surface_i]
@@ -137,32 +137,32 @@ local function check_all_chunks()
             local NW = surface.get_pollution({(x-1)*32, (y-1)*32})
 
             --adding chunk or neighboring chunks to the polluted_chunks table
-            if global.polluted_chunks[surface_i..":"..x..":"..y] == nil then
-                global.polluted_chunks[surface_i..":"..x..":"..y] = {position = {x=x,y=y}, r_id={}, surface=surface_i}
+            if storage.polluted_chunks[surface_i..":"..x..":"..y] == nil then
+                storage.polluted_chunks[surface_i..":"..x..":"..y] = {position = {x=x,y=y}, r_id={}, surface=surface_i}
             end
-            if N == 0 and global.polluted_chunks[surface_i..":"..x..":"..(y-1)] == nil and global.all_chunks[surface_i..":"..x..":"..(y-1)] ~= nil then
-                global.polluted_chunks[surface_i..":"..x..":"..(y-1)] = {position = {x=x, y=y-1}, r_id={}, surface=surface_i}
+            if N == 0 and storage.polluted_chunks[surface_i..":"..x..":"..(y-1)] == nil and storage.all_chunks[surface_i..":"..x..":"..(y-1)] ~= nil then
+                storage.polluted_chunks[surface_i..":"..x..":"..(y-1)] = {position = {x=x, y=y-1}, r_id={}, surface=surface_i}
             end
-            if E == 0 and global.polluted_chunks[surface_i..":"..(x+1)..":"..y] == nil and global.all_chunks[surface_i..":"..(x+1)..":"..y] ~= nil then
-                global.polluted_chunks[surface_i..":"..(x+1)..":"..y] = {position = {x=x+1, y=y}, r_id={}, surface=surface_i}
+            if E == 0 and storage.polluted_chunks[surface_i..":"..(x+1)..":"..y] == nil and storage.all_chunks[surface_i..":"..(x+1)..":"..y] ~= nil then
+                storage.polluted_chunks[surface_i..":"..(x+1)..":"..y] = {position = {x=x+1, y=y}, r_id={}, surface=surface_i}
             end
-            if S == 0 and global.polluted_chunks[surface_i..":"..x..":"..(y+1)] == nil and global.all_chunks[surface_i..":"..x..":"..(y+1)] ~= nil then
-                global.polluted_chunks[surface_i..":"..x..":"..(y+1)] = {position = {x=x, y=y+1}, r_id={}, surface=surface_i}
+            if S == 0 and storage.polluted_chunks[surface_i..":"..x..":"..(y+1)] == nil and storage.all_chunks[surface_i..":"..x..":"..(y+1)] ~= nil then
+                storage.polluted_chunks[surface_i..":"..x..":"..(y+1)] = {position = {x=x, y=y+1}, r_id={}, surface=surface_i}
             end
-            if W == 0 and global.polluted_chunks[surface_i..":"..(x-1)..":"..y] == nil and global.all_chunks[surface_i..":"..(x-1)..":"..y] ~= nil then
-                global.polluted_chunks[surface_i..":"..(x-1)..":"..y] = {position = {x=x-1, y=y}, r_id={}, surface=surface_i}
+            if W == 0 and storage.polluted_chunks[surface_i..":"..(x-1)..":"..y] == nil and storage.all_chunks[surface_i..":"..(x-1)..":"..y] ~= nil then
+                storage.polluted_chunks[surface_i..":"..(x-1)..":"..y] = {position = {x=x-1, y=y}, r_id={}, surface=surface_i}
             end
-            if NE == 0 and global.polluted_chunks[surface_i..":"..(x+1)..":"..(y-1)] == nil and global.all_chunks[surface_i..":"..(x+1)..":"..(y-1)] ~= nil then
-                global.polluted_chunks[surface_i..":"..(x+1)..":"..(y-1)] = {position = {x=x+1,y=y-1}, r_id={}, surface=surface_i}
+            if NE == 0 and storage.polluted_chunks[surface_i..":"..(x+1)..":"..(y-1)] == nil and storage.all_chunks[surface_i..":"..(x+1)..":"..(y-1)] ~= nil then
+                storage.polluted_chunks[surface_i..":"..(x+1)..":"..(y-1)] = {position = {x=x+1,y=y-1}, r_id={}, surface=surface_i}
             end
-            if SE == 0 and global.polluted_chunks[surface_i..":"..(x+1)..":"..(y+1)] == nil and global.all_chunks[surface_i..":"..(x+1)..":"..(y+1)] ~= nil then
-                global.polluted_chunks[surface_i..":"..(x+1)..":"..(y+1)] = {position = {x=x+1, y=y+1}, r_id={}, surface=surface_i}
+            if SE == 0 and storage.polluted_chunks[surface_i..":"..(x+1)..":"..(y+1)] == nil and storage.all_chunks[surface_i..":"..(x+1)..":"..(y+1)] ~= nil then
+                storage.polluted_chunks[surface_i..":"..(x+1)..":"..(y+1)] = {position = {x=x+1, y=y+1}, r_id={}, surface=surface_i}
             end
-            if SW == 0 and global.polluted_chunks[surface_i..":"..(x-1)..":"..(y+1)] == nil and global.all_chunks[surface_i..":"..(x-1)..":"..(y+1)] ~= nil then
-                global.polluted_chunks[surface_i..":"..(x-1)..":"..(y+1)] = {position = {x=x-1, y=y+1}, r_id={}, surface=surface_i}
+            if SW == 0 and storage.polluted_chunks[surface_i..":"..(x-1)..":"..(y+1)] == nil and storage.all_chunks[surface_i..":"..(x-1)..":"..(y+1)] ~= nil then
+                storage.polluted_chunks[surface_i..":"..(x-1)..":"..(y+1)] = {position = {x=x-1, y=y+1}, r_id={}, surface=surface_i}
             end
-            if NW == 0 and global.polluted_chunks[surface_i..":"..(x-1)..":"..(y-1)] == nil and global.all_chunks[surface_i..":"..(x-1)..":"..(y-1)] ~= nil then
-                global.polluted_chunks[surface_i..":"..(x-1)..":"..(y-1)] = {position = {x=x-1, y=y-1}, r_id={}, surface=surface_i}
+            if NW == 0 and storage.polluted_chunks[surface_i..":"..(x-1)..":"..(y-1)] == nil and storage.all_chunks[surface_i..":"..(x-1)..":"..(y-1)] ~= nil then
+                storage.polluted_chunks[surface_i..":"..(x-1)..":"..(y-1)] = {position = {x=x-1, y=y-1}, r_id={}, surface=surface_i}
             end
         end
     end
@@ -185,11 +185,11 @@ local function check_polluted_chunk(chunk_data)
 
     for i = 1, max_layers do
         local level = a*b^i + offset
-        local current_sprite = ""
-        local next_sprite = ""
+        local current_sprite = 0
+        local next_sprite = nil
 
         -- setting the current sprite
-        if r_id[i] ~= nil then current_sprite = rendering.get_sprite(r_id[i]) end
+        if r_id[i] ~= nil then current_sprite = rendering.get_object_by_id(r_id[i]) end
 
         -- setting the next sprite
         if chunk_pollution_level > level then
@@ -228,41 +228,41 @@ local function check_polluted_chunk(chunk_data)
         if r_id[i] ~= nil then
             if next_sprite == "" then
                 --mark for fade out
-                global.sprites_fading_out[r_id[i]] = {tint = {r=1, g=1, b=1, a=1}, position={x=x,y=y}}
+                storage.sprites_fading_out[r_id[i]] = {tint = {r=1, g=1, b=1, a=1}, position={x=x,y=y}}
                 r_id[i] = nil
             elseif next_sprite ~= current_sprite then
                 --mark for fade out
-                global.sprites_fading_out[r_id[i]] = {tint = {r=1, g=1, b=1, a=1}, position={x=x,y=y}}
+                storage.sprites_fading_out[r_id[i]] = {tint = {r=1, g=1, b=1, a=1}, position={x=x,y=y}}
                 --mark for fade in 
                 r_id[i] = rendering.draw_sprite{sprite=next_sprite, surface=surface,target=sprite_target, y_scale=2, x_scale=2, tint={r=0, g=0, b=0, a=0}, players=players}
                 if #players == 0 then 
                     rendering.set_visible(r_id[i], false)
                 end
-                global.sprites_fading_in[r_id[i]] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
+                storage.sprites_fading_in[r_id[i]] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
             end
         elseif next_sprite ~= "" then
             --mark for fade in
             r_id[i] = rendering.draw_sprite{sprite=next_sprite, surface=surface,target=sprite_target, y_scale=2, x_scale=2, tint={r=0, g=0,b=0, a=0}, players=players}
             if #players == 0 then rendering.set_visible(r_id[i], false) end
-            global.sprites_fading_in[r_id[i]] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
+            storage.sprites_fading_in[r_id[i]] = {tint = {r=0, g=0, b=0, a=0}, position={x=x,y=y}}
         end
 
-        --update global tables with new values
-        global.polluted_chunks[chunk_data.surface..":"..x..":"..y].r_id[i] = r_id[i]
+        --update storage tables with new values
+        storage.polluted_chunks[chunk_data.surface..":"..x..":"..y].r_id[i] = r_id[i]
     end
 
     -- delete chunk from polluted_chunks
     if remove_chunk then 
-        global.polluted_chunks[chunk_data.surface..":"..x..":"..y] = nil
+        storage.polluted_chunks[chunk_data.surface..":"..x..":"..y] = nil
     end
 end
 
 -- will check every polluted chunk and draw visuals
 local function check_polluted_chunks()
     for i = 1, settings.global["chunks-per-tick-pollution-visuals"].value do
-        local index ,chunk_data = next(global.polluted_chunks, global.polluted_chunks_i)
-        if index == nil then global.polluted_chunks_i = nil global.is_fading = true break
-        else global.polluted_chunks_i = index end
+        local index ,chunk_data = next(storage.polluted_chunks, storage.polluted_chunks_i)
+        if index == nil then storage.polluted_chunks_i = nil storage.is_fading = true break
+        else storage.polluted_chunks_i = index end
         check_polluted_chunk(chunk_data)
     end
 end
@@ -274,8 +274,10 @@ local function fade()
 
     for i = 1, 1000 do
         -- fading in
-        if is_fading_in and next(global.sprites_fading_in, global.sprites_fading_in_i) ~= nil then
-            local r_id, value = next(global.sprites_fading_in, global.sprites_fading_in_i)
+        if is_fading_in and next(storage.sprites_fading_in, storage.sprites_fading_in_i) ~= nil then
+            local r_id, value = next(storage.sprites_fading_in, storage.sprites_fading_in_i)
+            local render_object = rendering.get_object_by_id(r_id)
+
             local r = value.tint.r + 0.01
             local g = value.tint.g + 0.01
             local b = value.tint.b + 0.01
@@ -285,20 +287,21 @@ local function fade()
             local y = value.position.y
             
             if a >= 1 then
-                rendering.set_color(r_id, {r=1, g=1,b=1, a=1})
-                global.sprites_fading_in[r_id] = nil
+                render_object.color = {r=1, g=1,b=1, a=1}
+                storage.sprites_fading_in[r_id] = nil
             else
-                rendering.set_color(r_id, {r=b, g=g,b=b, a=a})
-                global.sprites_fading_in[r_id].tint = {r=b, g=g,b=b, a=a}
+                render_object.color = {r=b, g=g,b=b, a=a}
+                storage.sprites_fading_in[r_id].tint = {r=b, g=g,b=b, a=a}
             end
-            global.sprites_fading_in_i = r_id
+            storage.sprites_fading_in_i = r_id
         else
             is_fading_in = false
         end
         
         --fading out
-        if is_fading_out and next(global.sprites_fading_out, global.sprites_fading_out_i) ~= nil then
-            local r_id, value = next(global.sprites_fading_out, global.sprites_fading_out_i)
+        if is_fading_out and next(storage.sprites_fading_out, storage.sprites_fading_out_i) ~= nil then
+            local r_id, value = next(storage.sprites_fading_out, storage.sprites_fading_out_i)
+            local render_object = rendering.get_object_by_id(r_id)
             
             local r = value.tint.r - 0.01
             local g = value.tint.g - 0.01
@@ -309,14 +312,14 @@ local function fade()
             local y = value.position.y
 
             if a <= 0 then
-                rendering.set_color(r_id, {r=0, g=0,b=0, a=0})
-                global.sprites_fading_out[r_id] = nil
-                rendering.destroy(r_id)
+                render_object.color = {r=0, g=0,b=0, a=0}
+                storage.sprites_fading_out[r_id] = nil
+                render_object.destroy()
             else
-                rendering.set_color(r_id, {r=b, g=g,b=b, a=a})
-                global.sprites_fading_out[r_id].tint = {r=b, g=g,b=b, a=a}
+                render_object.color = {r=b, g=g,b=b, a=a}
+                storage.sprites_fading_out[r_id].tint = {r=b, g=g,b=b, a=a}
             end
-            global.sprites_fading_out_i = r_id
+            storage.sprites_fading_out_i = r_id
         else
             is_fading_out = false
         end
@@ -326,12 +329,12 @@ local function fade()
         end
     end
 
-    if next(global.sprites_fading_in, global.sprites_fading_in_i) == nil then global.sprites_fading_in_i = nil end
-    if next(global.sprites_fading_out, global.sprites_fading_out_i) == nil then global.sprites_fading_out_i = nil end
+    if next(storage.sprites_fading_in, storage.sprites_fading_in_i) == nil then storage.sprites_fading_in_i = nil end
+    if next(storage.sprites_fading_out, storage.sprites_fading_out_i) == nil then storage.sprites_fading_out_i = nil end
 
-    if next(global.sprites_fading_in, nil) == nil and next(global.sprites_fading_out, nil) == nil then
-        global.is_fading = false
-        global.is_checking = true
+    if next(storage.sprites_fading_in, nil) == nil and next(storage.sprites_fading_out, nil) == nil then
+        storage.is_fading = false
+        storage.is_checking = true
     end
 end
 
@@ -343,11 +346,11 @@ local function add_chunk(chunk)
 
 
     -- is needed for RSO
-    if global.is_setup == false then
+    if storage.is_setup == false then
         setup()
     end
     
-    global.all_chunks[surface.index..":"..x..":"..y] = {position = {x=x,y=y}, surface=surface.index}
+    storage.all_chunks[surface.index..":"..x..":"..y] = {position = {x=x,y=y}, surface=surface.index}
 end
 
 --deletes chunk from all_chunks and polluted_chunks
@@ -360,18 +363,18 @@ local function remove_chunks(data)
         local y = position.y
         local r_id = {}
 
-        if global.polluted_chunks[surface_i..":"..x..":"..y] ~= nil then
-            r_id = global.polluted_chunks[surface_i..":"..x..":"..y].r_id
+        if storage.polluted_chunks[surface_i..":"..x..":"..y] ~= nil then
+            r_id = storage.polluted_chunks[surface_i..":"..x..":"..y].r_id
         end
 
         for i ,v in pairs(r_id) do
-            global.sprites_fading_in[r_id[i]] = nil
-            global.sprites_fading_out[r_id[i]] = nil
+            storage.sprites_fading_in[r_id[i]] = nil
+            storage.sprites_fading_out[r_id[i]] = nil
             rendering.destroy(r_id[i])
         end
 
-        global.all_chunks[surface_i..":"..x..":"..y] = nil
-        global.polluted_chunks[surface_i..":"..x..":"..y] = nil
+        storage.all_chunks[surface_i..":"..x..":"..y] = nil
+        storage.polluted_chunks[surface_i..":"..x..":"..y] = nil
     end
 end
 
@@ -379,7 +382,7 @@ end
 local function setting_changed(data)
     if data.setting == "show-pollution-visuals" then
         local players = get_players_to_render_for()
-        for i, chunk_data in pairs(global.polluted_chunks) do
+        for i, chunk_data in pairs(storage.polluted_chunks) do
             for x, r_id in pairs(chunk_data.r_id) do
                 if #players == 0 then
                     rendering.set_visible(r_id, false)
@@ -396,16 +399,16 @@ end
 
 -- function that triggers every tick
 local function on_tick()
-    if global.is_setup == false then
+    if storage.is_setup == false then
         --log("setup")
         setup()
-    elseif not(global.is_checking) and not(global.is_fading) then
+    elseif not(storage.is_checking) and not(storage.is_fading) then
         --log("check polluted chunks")
         check_polluted_chunks()
-    elseif global.is_checking then
+    elseif storage.is_checking then
         --log("check all chunks")
         check_all_chunks()
-    elseif global.is_fading then
+    elseif storage.is_fading then
         --log("fade sprites")
         fade()
     end
@@ -415,7 +418,7 @@ local function remove_surface(data)
     local remove_data = {}
     remove_data.positions = {}
     remove_data.surface_index = data.surface_index
-    for i ,chunk_data in pairs(global.all_chunks) do
+    for i ,chunk_data in pairs(storage.all_chunks) do
         if chunk_data.surface == data.surface_index then
             remove_data.positions[#remove_data.positions+1] = chunk_data.position
         end
