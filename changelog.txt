@@ -60,3 +60,10 @@ Version: 0.2.7
 Date: 08-12-2022
   Changes:
     - fix compatability issue with RSO (made possible by SKProCH)
+---------------------------------------------------------------------------------------------------
+Version: 0.2.8
+Date: 09-03-2026
+  Changes:
+    - refoactor of code
+    - update to factorio 2.0
+

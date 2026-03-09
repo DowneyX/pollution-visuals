@@ -2,7 +2,6 @@
     "factorio.versions": [
         {
             "name": "factorio 2.0.72",
-            "active": true,
             "factorioPath": "/home/downey/.local/share/Steam/steamapps/compatdata/427520/pfx/drive_c/users/steamuser/AppData/Roaming/Factorio/mods/pollution-visuals_0.2.8/.vscode/factorio-proton-launch.sh",
             "docsPath": "../../../../../../../../../../../../common/Factorio/doc-html/runtime-api.json",
             "protosPath": "../../../../../../../../../../../../common/Factorio/doc-html/prototype-api.json"
