@@ -66,4 +66,8 @@ Date: 09-03-2026
   Changes:
     - refoactor of code
     - update to factorio 2.0
-
+---------------------------------------------------------------------------------------------------
+Version: 0.2.9
+Date: 024-03-2026
+  Changes:
+    - added some missing conditions wich caused no smog to spawn under certain conditions

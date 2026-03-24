@@ -4,15 +4,34 @@ local FADE_STEP = 0.01
 local MAX_FADE_UPDATES_PER_TICK = 1000
 
 local NEIGHBORS = {
-    { dx = 0, dy = -1 },
-    { dx = 1, dy = 0 },
-    { dx = 0, dy = 1 },
+    { dx = 0,  dy = -1 },
+    { dx = 1,  dy = 0 },
+    { dx = 0,  dy = 1 },
     { dx = -1, dy = 0 },
-    { dx = 1, dy = -1 },
-    { dx = 1, dy = 1 },
+    { dx = 1,  dy = -1 },
+    { dx = 1,  dy = 1 },
     { dx = -1, dy = 1 },
     { dx = -1, dy = -1 },
 }
+
+local MIDDLE_ANIMATIONS = {
+    "smog_middle",
+    "smog_middle_2",
+    "smog_middle_3",
+    "smog_middle_4",
+}
+
+local function is_middle_animation(name)
+    return name == "smog_middle"
+        or name == "smog_middle_2"
+        or name == "smog_middle_3"
+        or name == "smog_middle_4"
+end
+
+local function middle_animation_for_layer(layer_index)
+    local variant_index = ((layer_index - 1) % #MIDDLE_ANIMATIONS) + 1
+    return MIDDLE_ANIMATIONS[variant_index]
+end
 
 local function key_for(surface_index, x, y)
     return surface_index .. ":" .. x .. ":" .. y
@@ -137,32 +156,82 @@ local function check_all_chunks()
 end
 
 local function compute_sprite(surface, x, y, level, chunk_pollution)
-    if chunk_pollution > level then return "smog_middle" end
+    if chunk_pollution > level then
+        return "smog_middle"
+    end
 
+    -- Cardinal neighbors
     local n = sample_pollution(surface, x, y - 1) > level
     local e = sample_pollution(surface, x + 1, y) > level
     local s = sample_pollution(surface, x, y + 1) > level
     local w = sample_pollution(surface, x - 1, y) > level
+
+    -- Diagonals
     local ne = sample_pollution(surface, x + 1, y - 1) > level
     local se = sample_pollution(surface, x + 1, y + 1) > level
     local sw = sample_pollution(surface, x - 1, y + 1) > level
     local nw = sample_pollution(surface, x - 1, y - 1) > level
 
-    if (n and s) or (w and e) then return "smog_middle" end
-    if s and not w and not e then return "smog_top" end
-    if n and not w and not e then return "smog_bottom" end
-    if (w or (nw and sw)) and (not n and not s and not ne and not se) then return "smog_left" end
-    if (e or (ne and se)) and (not n and not s and not nw and not sw) then return "smog_right" end
+    -- Count cardinal neighbors (helps simplify logic)
+    local count = (n and 1 or 0) + (e and 1 or 0) + (s and 1 or 0) + (w and 1 or 0)
 
-    if sw and not n and not ne and not e and not se and not s and not w and not nw then return "smog_corner_left_top" end
-    if se and not n and not ne and not e and not sw and not s and not w and not nw then return "smog_corner_right_top" end
-    if nw and not n and not ne and not e and not sw and not s and not w and not se then return "smog_corner_left_bottom" end
-    if ne and not e and not se and not s and not sw and not w and not nw and not n then return "smog_corner_right_bottom" end
+    -- =====================================================
+    -- 1. FULL / STRAIGHT FILLS
+    -- =====================================================
 
-    if s and e and not w and not n and not nw then return "smog_corner_inv_left_top" end
-    if s and w and not e and not n and not ne then return "smog_corner_inv_right_top" end
-    if n and e and not w and not s and not sw then return "smog_corner_inv_left_bottom" end
-    if n and w and not e and not s and not se then return "smog_corner_inv_right_bottom" end
+    if count >= 3 then
+        return "smog_middle"
+    end
+
+    if (n and s) or (e and w) then
+        return "smog_middle"
+    end
+
+    -- =====================================================
+    -- 2. INVERTED (CONCAVE) CORNERS
+    -- =====================================================
+
+    if s and e and not (n or w) then return "smog_corner_inv_left_top" end
+    if s and w and not (n or e) then return "smog_corner_inv_right_top" end
+    if n and e and not (s or w) then return "smog_corner_inv_left_bottom" end
+    if n and w and not (s or e) then return "smog_corner_inv_right_bottom" end
+    if ne and nw and e and not (s or w) then return "smog_corner_inv_left_bottom" end
+    if se and sw and w and not (n or e) then return "smog_corner_inv_right_top" end
+    if se and ne and s and not (n or w) then return "smog_corner_inv_left_top" end
+    if sw and nw and n and not (s or e) then return "smog_corner_inv_right_bottom" end
+    if se and sw and e and not (n or w) then return "smog_corner_inv_left_top" end
+    if se and sw and w and not (n or e) then return "smog_corner_inv_right_top" end
+    if nw and ne and w and not (s or e) then return "smog_corner_inv_right_bottom" end
+    if nw and ne and e and not (s or w) then return "smog_corner_inv_left_bottom" end
+    if nw and ne and s and not (n or e) then return "smog_corner_inv_right_top" end
+    -- =====================================================
+    -- 3. EDGES
+    -- =====================================================
+
+    if s and not (n or e or w) then return "smog_top" end
+    if n and not (s or e or w) then return "smog_bottom" end
+
+    if w and not (n or s or e) then return "smog_left" end
+    if e and not (n or s or w) then return "smog_right" end
+
+    if ne and nw and not (n or e or s or w) then return "smog_bottom" end
+    if se and sw and not (s or e or n or w) then return "smog_top" end
+
+    if se and ne and not (s or e or n or w) then return "smog_right" end
+    if sw and nw and not (s or w or n or e) then return "smog_left" end
+
+    -- =====================================================
+    -- 4. OUTER (CONVEX) CORNERS
+    -- =====================================================
+
+    if sw and count == 0 then return "smog_corner_left_top" end
+    if se and count == 0 then return "smog_corner_right_top" end
+    if nw and count == 0 then return "smog_corner_left_bottom" end
+    if ne and count == 0 then return "smog_corner_right_bottom" end
+
+    -- =====================================================
+    -- 5. FALLBACK
+    -- =====================================================
 
     return nil
 end
@@ -190,8 +259,8 @@ local function get_render_object(id)
 end
 
 local function create_sprite(surface, sprite_name, x, y, players)
-    local object = rendering.draw_sprite {
-        sprite = sprite_name,
+    local object = rendering.draw_animation {
+        animation = sprite_name,
         surface = surface,
         target = chunk_center(x, y),
         y_scale = 2,
@@ -226,7 +295,7 @@ local function check_polluted_chunk(chunk_data)
         local current_sprite = nil
         local current_object = get_render_object(current_id)
         if current_object ~= nil then
-            current_sprite = current_object.sprite
+            current_sprite = current_object.animation
         else
             r_id[i] = nil
             current_id = nil
