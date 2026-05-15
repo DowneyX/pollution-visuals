@@ -191,10 +191,16 @@ local function compute_sprite(surface, x, y, level, chunk_pollution)
     -- 2. INVERTED (CONCAVE) CORNERS
     -- =====================================================
 
+    if w and s and ne and not (e or n) then return "smog_corner_inv_right_top_with_corner" end
+    if n and e and sw and not (w or s) then return "smog_corner_inv_left_bottom_with_corner" end
+    if s and e and nw and not (w or n) then return "smog_corner_inv_left_top_with_corner" end
+    if n and w and se and not (e or s) then return "smog_corner_inv_right_bottom_with_corner" end
+
     if s and e and not (n or w) then return "smog_corner_inv_left_top" end
     if s and w and not (n or e) then return "smog_corner_inv_right_top" end
     if n and e and not (s or w) then return "smog_corner_inv_left_bottom" end
     if n and w and not (s or e) then return "smog_corner_inv_right_bottom" end
+    
     if ne and nw and e and not (s or w) then return "smog_corner_inv_left_bottom" end
     if se and sw and w and not (n or e) then return "smog_corner_inv_right_top" end
     if se and ne and s and not (n or w) then return "smog_corner_inv_left_top" end
