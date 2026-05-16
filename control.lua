@@ -214,6 +214,18 @@ local function compute_sprite(surface, x, y, level, chunk_pollution)
     -- 3. EDGES
     -- =====================================================
 
+    if s and ne and not (n or e or w) then return "smog_top_with_corner_right" end
+    if s and nw and not (n or e or w) then return "smog_top_with_corner_left" end
+
+    if n and se and not (s or e or w) then return "smog_bottom_with_corner_right" end
+    if n and sw and not (s or e or w) then return "smog_bottom_with_corner_left" end
+
+    if w and ne and not (n or s or e) then return "smog_left_with_corner_bottom" end
+    if w and se and not (n or s or e) then return "smog_left_with_corner_top" end
+
+    if e and nw and not (n or s or w) then return "smog_right_with_corner_bottom" end
+    if e and sw and not (n or s or w) then return "smog_right_with_corner_top" end
+
     if s and not (n or e or w) then return "smog_top" end
     if n and not (s or e or w) then return "smog_bottom" end
 
@@ -229,6 +241,8 @@ local function compute_sprite(surface, x, y, level, chunk_pollution)
     -- =====================================================
     -- 4. OUTER (CONVEX) CORNERS
     -- =====================================================
+    if sw and ne and not (n and e and s and w and se and nw) then return "smog_corner_left_top_with_right_bottom" end
+    if se and nw and not (n and e and s and w and sw and ne) then return "smog_corner_left_bottom_with_right_top" end
 
     if sw and count == 0 then return "smog_corner_left_top" end
     if se and count == 0 then return "smog_corner_right_top" end

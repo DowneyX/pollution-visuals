@@ -83,4 +83,56 @@ data:extend({{
     name = "smog_corner_inv_right_top_with_corner",
     filename = "__pollution-visuals__/graphics/smog_corner_inv_right_top_with_corner.png",
     size = 512
-}})
+}, {
+    type = "animation",
+    name = "smog_bottom_with_corner_left",
+    filename = "__pollution-visuals__/graphics/smog_bottom_with_corner_left.png",
+    size = 512
+}, {
+    type = "animation",
+    name = "smog_bottom_with_corner_right",
+    filename = "__pollution-visuals__/graphics/smog_bottom_with_corner_right.png",
+    size = 512
+}, {
+    type = "animation",
+    name = "smog_top_with_corner_left",
+    filename = "__pollution-visuals__/graphics/smog_top_with_corner_left.png",
+    size = 512
+}, {
+    type = "animation",
+    name = "smog_top_with_corner_right",
+    filename = "__pollution-visuals__/graphics/smog_top_with_corner_right.png",
+    size = 512
+},{
+    type = "animation",
+    name = "smog_left_with_corner_bottom",
+    filename = "__pollution-visuals__/graphics/smog_left_with_corner_bottom.png",
+    size = 512
+},{
+    type = "animation",
+    name = "smog_left_with_corner_top",
+    filename = "__pollution-visuals__/graphics/smog_left_with_corner_top.png",
+    size = 512
+},{
+    type = "animation",
+    name = "smog_right_with_corner_bottom",
+    filename = "__pollution-visuals__/graphics/smog_right_with_corner_bottom.png",
+    size = 512
+},{
+    type = "animation",
+    name = "smog_right_with_corner_top",
+    filename = "__pollution-visuals__/graphics/smog_right_with_corner_top.png",
+    size = 512
+},{
+    type = "animation",
+    name = "smog_corner_left_bottom_with_right_top",
+    filename = "__pollution-visuals__/graphics/smog_corner_left_bottom_with_right_top.png",
+    size = 512
+},{
+    type = "animation",
+    name = "smog_corner_left_top_with_right_bottom",
+    filename = "__pollution-visuals__/graphics/smog_corner_left_top_with_right_bottom.png",
+    size = 512
+}
+
+})
